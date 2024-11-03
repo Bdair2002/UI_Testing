@@ -3,17 +3,11 @@ import render from "../../../tests/render";
 import { act, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import SignUp from "..";
-import { debug } from "jest-preview";
-// import { server } from "../../../mocks/server";
-// import { http, HttpResponse } from "msw";
 const {
   mockedUser,
   mockedSuccessUser,
 } = require("../../../mocks/data/signupMockData");
 import axios from "axios";
-// beforeAll(() => server.listen());
-// afterEach(() => server.resetHandlers());
-// afterAll(() => server.close());
 
 const getters = {
   getEmailInput: () => screen.getByLabelText(/^Email Address/),
@@ -53,7 +47,6 @@ describe("SignUp Component", () => {
       userEvent.click(document.body);
       const validationMessage = await screen.findByText("Enter a valid email");
       expect(validationMessage).toBeInTheDocument();
-      // use jest preview to debug your test
     });
 
     it("should display validation errors for short password", async () => {
@@ -64,11 +57,9 @@ describe("SignUp Component", () => {
         "Password should be of minimum 8 characters length"
       );
       expect(validationMessage).toBeInTheDocument();
-      debug();
     });
 
     it("should display success message on successful sign-up", async () => {
-      debug();
       const signUpAPI = jest
         .spyOn(axios, "post")
         .mockImplementation((url) => Promise.resolve(mockedSuccessUser));
@@ -78,26 +69,15 @@ describe("SignUp Component", () => {
       });
       const successMessage = await screen.findByText("Sign Up Successfully!");
       expect(successMessage).toBeInTheDocument();
-      debug();
     });
 
     it("should display error message on sign-up failure", async () => {
-      debug();
-      // server.use(
-      //   http.post("*/users", () => {
-      //     return new HttpResponse(null, {
-      //       status: 500,
-      //     });
-      //   })
-      // );
-
       jest
         .spyOn(axios, "post")
         .mockImplementation((url) => Promise.reject(new Error("Error")));
       await signUpUser();
       const errorMessage = await screen.findByText("Error Signing Up!");
       expect(errorMessage).toBeInTheDocument();
-      debug();
     });
   });
 
@@ -114,7 +94,6 @@ describe("SignUp Component", () => {
       await waitFor(() => {
         expect(signUpButton).toBeEnabled();
       });
-      debug();
     });
 
     it("should disable Sign Up button when form is invalid", async () => {
