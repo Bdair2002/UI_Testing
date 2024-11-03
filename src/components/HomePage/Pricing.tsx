@@ -74,7 +74,7 @@ export default function Pricing() {
           textAlign: { sm: "left", md: "center" },
         }}
       >
-        <Typography component="h2" variant="h4" color="text.primary">
+        <Typography variant="h4" color="text.primary">
           Pricing
         </Typography>
         <Typography variant="body1" color="text.secondary">
@@ -118,9 +118,7 @@ export default function Pricing() {
                     color: tier.title === "Professional" ? "grey.100" : "",
                   }}
                 >
-                  <Typography component="h3" variant="h6">
-                    {tier.title}
-                  </Typography>
+                  <Typography variant="h6">{tier.title}</Typography>
                   {tier.title === "Professional" && (
                     <Chip
                       icon={<AutoAwesomeIcon />}
@@ -148,12 +146,8 @@ export default function Pricing() {
                       tier.title === "Professional" ? "grey.50" : undefined,
                   }}
                 >
-                  <Typography component="h3" variant="h2">
-                    ${tier.price}
-                  </Typography>
-                  <Typography component="h3" variant="h6">
-                    &nbsp; per month
-                  </Typography>
+                  <Typography variant="h2">${tier.price}</Typography>
+                  <Typography variant="h6">&nbsp; per month</Typography>
                 </Box>
                 <Divider
                   sx={{
@@ -182,7 +176,6 @@ export default function Pricing() {
                       }}
                     />
                     <Typography
-                      component="text"
                       variant="subtitle2"
                       sx={{
                         color:
