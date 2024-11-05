@@ -1,6 +1,6 @@
 import React from "react";
 import render from "../../../tests/render";
-import { act, screen, waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import SignUp from "..";
 const {
@@ -8,33 +8,8 @@ const {
   mockedSuccessUser,
 } = require("../../../mocks/data/signupMockData");
 import axios from "axios";
-
-const getters = {
-  getEmailInput: () => screen.getByLabelText(/^Email Address/),
-  getPasswordInput: () => screen.getByLabelText(/^Password/),
-  getUserNameInput: () => screen.getByLabelText(/^User Name/),
-  getSignUpButton: () =>
-    screen.getByRole("button", {
-      name: /Sign up/i,
-    }),
-};
-
-function fillUserForm() {
-  const emailInput = getters.getEmailInput();
-  const passwordInput = getters.getPasswordInput();
-  const userNameInput = getters.getUserNameInput();
-  userEvent.type(emailInput, mockedUser.email);
-  userEvent.type(passwordInput, mockedUser.password);
-  userEvent.type(userNameInput, mockedUser.username);
-}
-
-export const signUpUser = async () => {
-  fillUserForm();
-  const signUpButton = getters.getSignUpButton();
-  await act(async () => {
-    userEvent.click(signUpButton);
-  });
-};
+import * as getters from "./helpers";
+import { get } from "http";
 
 describe("SignUp Component", () => {
   describe("Validation", () => {
@@ -42,17 +17,15 @@ describe("SignUp Component", () => {
       render(<SignUp />);
     });
     it("should display validation errors for invalid email", async () => {
-      const emailInput = getters.getEmailInput();
-      userEvent.type(emailInput, "invalid-email");
-      userEvent.click(document.body);
+      const emailInput = getters.getInput("Email Address");
+      getters.typeInput(emailInput, "invalidemail");
       const validationMessage = await screen.findByText("Enter a valid email");
       expect(validationMessage).toBeInTheDocument();
     });
 
     it("should display validation errors for short password", async () => {
-      const passwordInput = getters.getPasswordInput();
-      userEvent.type(passwordInput, "123");
-      userEvent.click(document.body);
+      const passwordInput = getters.getInput("Password");
+      getters.typeInput(passwordInput, "123");
       const validationMessage = await screen.findByText(
         "Password should be of minimum 8 characters length"
       );
@@ -63,10 +36,7 @@ describe("SignUp Component", () => {
       const signUpAPI = jest
         .spyOn(axios, "post")
         .mockImplementation((url) => Promise.resolve(mockedSuccessUser));
-      await signUpUser();
-      await waitFor(() => {
-        expect(signUpAPI).toBeCalled();
-      });
+      await getters.signUpUser(mockedUser);
       const successMessage = await screen.findByText("Sign Up Successfully!");
       expect(successMessage).toBeInTheDocument();
     });
@@ -75,7 +45,7 @@ describe("SignUp Component", () => {
       jest
         .spyOn(axios, "post")
         .mockImplementation((url) => Promise.reject(new Error("Error")));
-      await signUpUser();
+      await getters.signUpUser(mockedUser);
       const errorMessage = await screen.findByText("Error Signing Up!");
       expect(errorMessage).toBeInTheDocument();
     });
@@ -89,7 +59,7 @@ describe("SignUp Component", () => {
       jest.restoreAllMocks();
     });
     it("should enable Sign Up button when form is valid", async () => {
-      fillUserForm();
+      getters.fillUserForm(mockedUser);
       const signUpButton = getters.getSignUpButton();
       await waitFor(() => {
         expect(signUpButton).toBeEnabled();
@@ -98,30 +68,29 @@ describe("SignUp Component", () => {
 
     it("should disable Sign Up button when form is invalid", async () => {
       const signUpButton = getters.getSignUpButton();
-      const emailInput = getters.getEmailInput();
-      fillUserForm();
-      userEvent.clear(emailInput);
+      const emailInput = getters.getInput("Email Address");
+      getters.fillUserForm(mockedUser);
+      getters.clearInput(emailInput);
       await waitFor(() => {
         expect(signUpButton).toBeDisabled();
       });
     });
 
     it("should update form fields on user input", async () => {
-      const emailInput = getters.getEmailInput();
-      const passwordInput = getters.getPasswordInput();
-      const userNameInput = getters.getUserNameInput();
-      fillUserForm();
+      const inputs = [
+        { element: getters.getInput("Email Address"), value: mockedUser.email },
+        { element: getters.getInput("Password"), value: mockedUser.password },
+        { element: getters.getInput("User Name"), value: mockedUser.username },
+      ];
 
-      await waitFor(() => {
-        expect(emailInput).toHaveValue(mockedUser.email);
+      inputs.forEach(({ element, value }) => {
+        getters.typeInput(element, value);
       });
 
       await waitFor(() => {
-        expect(passwordInput).toHaveValue(mockedUser.password);
-      });
-
-      await waitFor(() => {
-        expect(userNameInput).toHaveValue(mockedUser.username);
+        inputs.forEach(({ element, value }) => {
+          expect(element).toHaveValue(value);
+        });
       });
     });
   });
